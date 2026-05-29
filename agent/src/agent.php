@@ -33,7 +33,7 @@ require __DIR__.'/bootstrap.php';
  * Testing...
  */
 
-/** @var (Closure(float $connectionTimeout, float $timeout, array<string, string> $headers, ?string $baseUrl): Browser)|null $browserFactory */
+/** @var (Closure(float $connectionTimeout, float $timeout, array<string, string> $headers, ?string $baseUrl, ?string $proxy): Browser)|null $browserFactory */
 $browserFactory ??= null;
 /** @var (Closure(): ServerInterface)|null $serverResolver */
 $serverResolver ??= null;
@@ -73,6 +73,8 @@ $silent ??= strtolower($_SERVER['NIGHTWATCH_AGENT_LOG_LEVEL'] ?? '') === 'critic
 $quiet ??= strtolower($_SERVER['NIGHTWATCH_AGENT_LOG_LEVEL'] ?? '') === 'error'; // @phpstan-ignore argument.type
 /** @var ?bool $verbose */
 $verbose ??= strtolower($_SERVER['NIGHTWATCH_AGENT_LOG_LEVEL'] ?? '') === 'verbose'; // @phpstan-ignore argument.type
+/** @var ?string $proxy */
+$proxy ??= $_SERVER['NIGHTWATCH_PROXY'] ?? $_SERVER['http_proxy'] ?? $_SERVER['HTTPS_PROXY'] ?? null; // @phpstan-ignore nullCoalesce.offset
 
 /*
  * Prepare loop...
@@ -156,6 +158,7 @@ $ingestDetailsBrowser = $browserFactory(
         'user-agent' => 'NightwatchAgent/'.$packageVersion,
     ],
     baseUrl: rtrim($baseUrl, '/'),
+    proxy: $proxy,
 );
 
 $ingestDetails = new IngestDetailsRepository(
@@ -180,6 +183,7 @@ $ingestBrowser = $browserFactory(
         'nightwatch-server' => $server,
         'user-agent' => 'NightwatchAgent/'.$packageVersion,
     ],
+    proxy: $proxy,
 );
 
 $ingest = new Ingest(

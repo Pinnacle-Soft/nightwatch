@@ -2,6 +2,7 @@
 
 namespace Laravel\NightwatchAgent\Factories;
 
+use Clue\React\HttpProxy\ProxyConnector;
 use Laravel\NightwatchAgent\Browser as NightwatchBrowser;
 use Laravel\NightwatchAgent\Contracts\Browser as BrowserContract;
 use React\Http\Browser as ReactBrowser;
@@ -17,8 +18,14 @@ class BrowserFactory
         float $timeout,
         array $headers = [],
         ?string $baseUrl = null,
+        ?string $proxy = null,
     ): BrowserContract {
-        $connector = new Connector(['timeout' => $connectionTimeout]);
+        if ($proxy !== null) {
+            $proxyConnector = new ProxyConnector($proxy, new Connector(['timeout' => $connectionTimeout]));
+            $connector = new Connector(['tcp' => $proxyConnector, 'dns' => false, 'timeout' => $connectionTimeout]);
+        } else {
+            $connector = new Connector(['timeout' => $connectionTimeout]);
+        }
 
         $browser = (new ReactBrowser($connector))
             ->withTimeout($timeout)
